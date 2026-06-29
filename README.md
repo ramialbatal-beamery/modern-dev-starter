@@ -29,3 +29,5 @@ ruff check src tests   # lint (also what CI does)
 ```
 
 Start with **GUIDE.md** — it walks you through the whole thing in order.
+
+_My first PR — opened 2026-06-29._
