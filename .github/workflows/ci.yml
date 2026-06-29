@@ -35,5 +35,5 @@ jobs:
         run: ruff check src tests
 
       # 5. Test: does the code actually do what the tests say it should?
-      - name: Run tests
+      - name: Run the unit tests
         run: pytest -q
