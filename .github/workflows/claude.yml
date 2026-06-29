@@ -1,0 +1,45 @@
+# .github/workflows/claude.yml
+#
+# This wires Claude into your repo as a teammate.
+# Two things happen once this is installed:
+#
+#   1. AUTO REVIEW: every time a PR is opened or updated, Claude reads the
+#      diff and posts review comments (bugs, edge cases, security, style).
+#   2. @claude MENTIONS: type "@claude ..." in any issue or PR comment and
+#      Claude responds — it can answer questions, OR implement the change
+#      and push commits to the PR branch.
+#
+# SETUP (one-time, must be a repo admin):
+#   - Easiest: in the Claude Code terminal, run  /install-github-app
+#     It installs the GitHub App and adds the secret for you.
+#   - The action needs a credential stored as a repo secret: either
+#     ANTHROPIC_API_KEY (from the Anthropic Console) or a Claude Code
+#     OAuth token. This is the BOT's credential — separate from the
+#     individual Claude Code seats your team logs in with locally.
+
+name: Claude
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request:
+    types: [opened, synchronize]   # auto-review on open + each new commit
+
+jobs:
+  claude:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write          # so Claude can push fixes
+      pull-requests: write      # so Claude can comment / open PRs
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Optional: keep cost predictable on big PRs
+          claude_args: "--max-turns 8"

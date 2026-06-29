@@ -1,0 +1,70 @@
+# docs/jira-daily-loop.yml
+#
+# THE "EVERY DAY, READ TICKETS AND SOLVE THEM" LOOP.
+# This is an EXAMPLE to study, not to switch on blindly. Read the guardrails
+# at the bottom before you ever point this at a real repo.
+#
+# What it does: every weekday morning, Claude looks at a narrow, safe slice
+# of Jira (e.g. tickets labelled `ai-ready` in a "Ready for Dev" column),
+# picks them up one at a time, implements each on its own branch, and opens
+# a PR for a human to review. It does NOT merge. A person always merges.
+
+name: Jira Daily Loop
+
+on:
+  schedule:
+    - cron: "0 7 * * 1-5"   # 07:00 UTC, Monday–Friday
+  workflow_dispatch: {}       # also lets you trigger it manually for testing
+
+jobs:
+  triage-and-implement:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pytest ruff
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: "--max-turns 25"
+          # Jira is connected via MCP using read-only credentials (see guardrails).
+          prompt: |
+            1. Fetch Jira issues that are labelled `ai-ready` AND in status
+               "Ready for Dev". Process at most 2 per run, smallest first.
+            2. For EACH issue:
+               - Read the description and acceptance criteria.
+               - If anything is ambiguous or you'd have to guess, DO NOT code.
+                 Post the open questions as a comment on the issue and skip it.
+               - Otherwise: create a branch `ai/<ISSUE-KEY>-<slug>`, implement
+                 the change, add or update tests, run `ruff check` and `pytest`.
+               - Only if both pass, open a PR that links the issue and fills in
+                 the PR template. Never push to main. Never merge.
+            3. Stop after 2 issues even if more match.
+
+# ───────────────────────── GUARDRAILS (read these) ─────────────────────────
+#
+# Autonomy is a dial, not a switch. Start at the safe end and earn trust:
+#
+#  1. NARROW THE INPUT. Only act on an explicit label like `ai-ready` that a
+#     human applies on purpose. Never "just grab the backlog".
+#  2. HUMANS MERGE, ALWAYS. The bot opens PRs; CI runs; a person reviews and
+#     clicks merge. This keeps a real review gate on everything that ships.
+#  3. READ-ONLY JIRA. Give the loop credentials that can READ tickets and
+#     COMMENT, but not change status or rewrite acceptance criteria.
+#  4. SCOPE THE BOT'S WRITE ACCESS. Branch-protection rule: the bot token can
+#     only push to `ai/*` branches. main is structurally unreachable to it.
+#  5. CAP THE COST. `--max-turns`, a small per-run ticket limit, and only
+#     small/well-specified tickets. Watch spend for the first few weeks.
+#  6. EXPECT IT TO PUNT. A good loop that says "this is ambiguous, here are my
+#     questions" is working correctly. Auto-coding a vague ticket is the bug.
+#
+# Sensible adoption order:
+#   read-only investigation  ->  draft implementation plans  ->  open PRs for
+#   tiny tickets  ->  (much later, maybe) broaden the ticket types.

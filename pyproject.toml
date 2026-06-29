@@ -1,0 +1,13 @@
+[project]
+name = "textutils"
+version = "0.1.0"
+description = "A tiny demo library for learning the modern PR + CI/CD workflow."
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]

@@ -1,0 +1,39 @@
+# .github/workflows/ci.yml
+#
+# This is Continuous Integration (the "CI" in CI/CD).
+# GitHub runs this automatically on every push and every pull request.
+# If any step fails, the PR gets a red X and (with branch protection on)
+# cannot be merged. A green tick means: tests pass, lint passes, build works.
+
+name: CI
+
+# WHEN does this run?
+on:
+  push:
+    branches: [main]        # run when something lands on main
+  pull_request:             # run on every PR, on every new commit pushed to it
+
+# WHAT does it do?
+jobs:
+  test:
+    runs-on: ubuntu-latest  # GitHub spins up a fresh Linux machine for you
+
+    steps:
+      # 1. Get a copy of the code from the PR branch onto the machine
+      - uses: actions/checkout@v4
+
+      # 2. Install the Python version we support
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 3. Install dependencies
+      - run: pip install pytest ruff
+
+      # 4. Lint: is the code clean and consistent? (style + obvious bugs)
+      - name: Lint
+        run: ruff check src tests
+
+      # 5. Test: does the code actually do what the tests say it should?
+      - name: Run tests
+        run: pytest -q

@@ -1,0 +1,22 @@
+{
+  "_comment": [
+    "Rename this to .mcp.json to let Claude Code read/update Jira tickets.",
+    "This connects Claude Code -> Atlassian's MCP server -> Jira's API.",
+    "Your credentials stay local; they go to Atlassian, not to Anthropic.",
+    "Use API-token auth (stable for terminal/automation). The older OAuth/SSE",
+    "endpoint is being retired, so prefer the token flow for anything scheduled.",
+    "NEVER commit real tokens — keep them in environment variables."
+  ],
+  "mcpServers": {
+    "atlassian": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@atlassian/mcp-server"],
+      "env": {
+        "JIRA_HOST": "${JIRA_HOST}",
+        "JIRA_EMAIL": "${JIRA_EMAIL}",
+        "JIRA_API_TOKEN": "${JIRA_API_TOKEN}"
+      }
+    }
+  }
+}
