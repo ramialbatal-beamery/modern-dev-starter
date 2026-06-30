@@ -28,3 +28,8 @@ def test_no_space_cuts_at_character_boundary():
     result = truncate("Superlongword", 6)
     assert result == "Super…"
     assert len(result) <= 6
+
+
+def test_leading_space_uses_space_boundary_instead_of_cutting_word():
+    # The only space that fits is at index 0; truncation should not cut "HelloWorld" mid-word.
+    assert truncate(" HelloWorld", 6) == "…"
