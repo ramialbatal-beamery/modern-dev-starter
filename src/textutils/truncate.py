@@ -37,9 +37,9 @@ def truncate(text: str, limit: int) -> str:
     if available == 0:
         return _ELLIPSIS
 
-    cut = text[:available]
-    space_pos = cut.rfind(" ")
-    if space_pos >= 0:
-        cut = cut[:space_pos]
+cut = text[:available]
+space_pos = cut.rfind(" ")
+if space_pos > 0:
+    cut = cut[:space_pos]
 
     return cut + _ELLIPSIS
