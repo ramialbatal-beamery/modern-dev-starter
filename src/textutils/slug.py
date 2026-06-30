@@ -46,6 +46,5 @@ def slugify(text: str, max_length: int | None = None) -> str:
     if max_length is not None and len(slug) > max_length:
         slug = slug[:max_length].rsplit("-", 1)[0]
 
-    # Strip any leading or trailing hyphens that may have been introduced by the
-
+    # Strip any leading or trailing hyphens that may have been introduced by trimming.
     return slug.strip("-")
